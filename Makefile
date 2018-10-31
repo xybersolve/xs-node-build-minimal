@@ -1,7 +1,7 @@
 #
-# xs-jenkins-blue
+# xs-node-build-minimal
 #
-# Make & Register xs-jenkins-blue to docker.io/$(ORG)"
+# Make & Register image to docker.io/$(ORG)"
 # $ make build
 # $ make tag
 # $ make login
@@ -13,11 +13,22 @@
 # TODO: ECR push
 # TODO: Version bump & tagging
 #
+# Make environment
+ORG := xybersolve
+NAME := xs-node-minimal-build
+PROJECT := $(NAME)
+VERSION := 1.0.4
+IMAGE := $(NAME)
+CONTAINER := $(NAME)
+BACKUP_DIR := ./archives
+
+# targets
 .PHONY: build tag push test deploy archive ssh help tag login push \
 				tag-ecr login-ecr push-ecr
 
 # Environment specifics for this build
-include ./env.mk
+#include ./env.mk
+
 # Versioning
 #VERSION=$(shell node -pe "require('./package.json').version")
 HASH_LONG := $(shell git log -1 --pretty=%H)
@@ -33,12 +44,9 @@ DATE_TIME := $(shell date +"%Y%m%d" )
 BACKUP_FILE := $(IMAGE)-$(DATE_TIME)-$(HASH_SHORT).tgz
 BACKUP_PATH := "$(BACKUP_DIR)/$(BACKUP_FILE)"
 
-# AWS ECR tag & push
-#$(AWS_ACCT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(IMAGE):$(TAG)
-# 123456789.dkr.ecr.us-east-1.amazonaws.com/mytag:latest
 
 # AWS Envirnoment specifics for tag & push to ECR
-include Makefile.ecr
+# include Makefile.ecr
 #ECR_URI := $(AWS_ACCT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_GIT := $(ECR_URI)/$(IMAGE):$(HASH_SHORT)
 ECR_VER := $(ECR_URI)/$(IMAGE):$(VERSION)
@@ -62,17 +70,18 @@ tag: ## Tag for DockerHub Registry
 test: ## Test whatever needs testing
 	@echo 'Test what needs testing'
 
-login: ## Login to DockerHub, expect user=<username>, pass=<password>
+login: ## Login to DockerHub
 	# from terminal
-	#@docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} #${DOCKER_HOST}
+	@docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} #${DOCKER_HOST}
 	# from jenkins
-	@docker login -u $(user) -p $(pass)
+	# @docker login -u $(user) -p $(pass)
 
-push: ## Push to DockerHub registry
+push: login ## Push to DockerHub registry
 	@echo 'Push to registry, as follows:'
 	#@echo "REPO_VER: $(REPO_VER)"
 	@echo "REPO_GIT: $(REPO_GIT)"
 	@echo "REPO_LATEST: $(REPO_LATEST)"
+
 	#@docker push $(REPO_VER)
 	@docker push $(ORG)/$(IMAGE):$(HASH_SHORT)
 	@docker push $(ORG)/$(IMAGE):latest
@@ -98,19 +107,23 @@ push-ecr: login-ecr ## Push to AWS ECR
 	#@docker push $(ECR_URI)/$(ECR_GIT)
 	#@docker push $(ECR_URI)/$(ECR_LATEST)
 
-deploy: ## Deploy into field
-	@echo 'empty deploy'
+deploy: build tag login push  ## Deploy into repo
+# make build steps
+# $ make build
+# $ make tag
+# $ make login
+# $ make push
 
 up: ## Run the newest created image
-	@docker run \
-		--name "${JENKINS_CONTAINER}" \
-		-u root \
-		--rm \
-		-d \
-		-p 8080:8080 \
-		-v ~/.jenkins:/var/jenkins_home \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		$(REPO_LATEST)
+	# @docker run \
+	# 	--name "${JENKINS_CONTAINER}" \
+	# 	-u root \
+	# 	--rm \
+	# 	-d \
+	# 	-p 8080:8080 \
+	# 	-v ~/.jenkins:/var/jenkins_home \
+	# 	-v /var/run/docker.sock:/var/run/docker.sock \
+	# 	$(REPO_LATEST)
 
 down: ## Bring down the running container
 	docker container stop $(CONTAINER)
@@ -129,6 +142,10 @@ ssh: ## SSH into image
 	@docker run -it --rm $(IMAGE):latest /bin/bash
 
 help:
+	@echo ''
+	@echo ''
+	@echo ''
+	@echo ''
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| sort \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
