@@ -1,0 +1,34 @@
+# mac
+*.DS_Store
+.fseventsd
+.AppleDouble
+.Spotlight-V100
+.LSOverride
+.Trashes
+
+# Linux
+*~
+.Trash-*
+
+# ide
+.idea/
+
+# vim
+[._]sw[a-p]
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+Session.vim
+tags
+
+# Virtualenv
+bin
+lib
+include
+pip-selfcheck.json
+.Python
+
+# Project
+archives/
+notes/
+node_modules/
