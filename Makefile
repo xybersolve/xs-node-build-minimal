@@ -115,16 +115,8 @@ deploy: build tag login push  ## Deploy into repo
 # $ make push
 
 up: ## Run the newest created image
-	# @docker run \
-	# 	--name "${JENKINS_CONTAINER}" \
-	# 	-u root \
-	# 	--rm \
-	# 	-d \
-	# 	-p 8080:8080 \
-	# 	-v ~/.jenkins:/var/jenkins_home \
-	# 	-v /var/run/docker.sock:/var/run/docker.sock \
-	# 	$(REPO_LATEST)
-
+	# no run for build image - is base to be used by others
+	
 down: ## Bring down the running container
 	docker container stop $(CONTAINER)
 	docker container rmi $(CONTAINER)
