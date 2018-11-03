@@ -1,8 +1,12 @@
 # xs-node-build-minimal
 
-> Builds minimal build environment using Node
+> Creates base build image: miimal Node build environment, other images can add
+specifics per build requirement.
 
-## Makefile
+## CircleCI Deployment
+> Currently, CircleCi deploys off pushes to `release` branch.
+
+## Makefile (DEPRECATED)
 ```sh
 
 $ make help
