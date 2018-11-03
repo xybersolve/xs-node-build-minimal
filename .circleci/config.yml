@@ -1,0 +1,36 @@
+version: 2.0
+jobs:
+  deploy:
+    machine:
+      enabled: true
+    working_directory: /home/circleci/postgres
+    environment:
+      DOCKER_IMAGE=xybersolve/xs-node-build-minimal
+
+    steps:
+      - checkout
+
+      - run:
+          name: Build image
+          command: docker build -t ${DOCKER_IMAGE} .
+
+      - run:
+          name: Tag and deploy image to docker hub
+          command: |
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            VERSION="0.1.${CIRCLE_BUILD_NUM}-${SHORT_SHA}"
+            # tag with git sha
+            docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}:${VERSION}
+            # tag as latest
+            docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}:latest
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+            docker push ${DOCKER_IMAGE}
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - deploy:
+          context: org-global
+          filters:
+            branches:
+              only: master
