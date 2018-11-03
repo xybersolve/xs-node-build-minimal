@@ -3,7 +3,7 @@ jobs:
   deploy:
     machine:
       enabled: true
-    working_directory: /home/circleci/postgres
+    working_directory: ~/xs-node-build-minimal
     environment:
       DOCKER_IMAGE=xybersolve/xs-node-build-minimal
 
@@ -30,7 +30,7 @@ workflows:
   deploy:
     jobs:
       - deploy:
-          context: org-global
+          context: xs-docker
           filters:
             branches:
               only: master
