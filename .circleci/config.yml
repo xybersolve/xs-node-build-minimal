@@ -33,4 +33,4 @@ workflows:
           context: xs-docker
           filters:
             branches:
-              only: master
+              only: release
